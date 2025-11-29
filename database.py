@@ -202,6 +202,7 @@ class Database:
         conn.commit()
         conn.close()
 
+
     def get_role_count(self, role_id):
         """Berilgan role_id bo'yicha nechta user borligini hisoblash"""
         conn = self.get_connection()
@@ -582,19 +583,67 @@ class Database:
                 COUNT(tc.id) AS completed_tasks
 
             FROM filials f
-            LEFT JOIN tasks t ON t.filial_id = f.id 
-                AND DATE(t.created_at) = ?
+            LEFT JOIN tasks t ON t.filial_id = f.id
 
             LEFT JOIN task_completions tc ON tc.task_id = t.id
                 AND tc.completion_date = ?
 
             GROUP BY f.id, f.name
             ORDER BY f.id
-        """, (date_obj, date_obj))
+        """, (date_obj,))
 
         result = cursor.fetchall()
         conn.close()
         return result
+    
+
+    def get_filial_task_statistics_last_month(self):
+        """
+        Har bir filial bo'yicha oxirgi 1 oylik vazifalar statistikasi
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                f.id AS filial_id,
+                f.name AS filial_name,
+
+                -- jami vazifalar
+                COUNT(t.id) AS total_tasks,
+
+                -- bajarilgan vazifalar
+                COUNT(tc.id) AS completed_tasks
+
+            FROM filials f
+            LEFT JOIN tasks t ON t.filial_id = f.id
+
+            LEFT JOIN task_completions tc ON tc.task_id = t.id
+                AND tc.completion_date >= DATE('now', '-30 day')
+
+            GROUP BY f.id, f.name
+            ORDER BY f.id
+        """)
+        
+        result = cursor.fetchall()
+        conn.close()
+        return result
+    
+
+    def reset_daily_tasks(self, task_type="daily"):
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE task SET is_active = 0 WHERE task_type = ?", (task_type,))
+        conn.commit()
+        conn.close()
+
+
+    def reset_monthly_tasks(self, task_type="monthly"):
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE task SET is_active = 0 WHERE task_type = ?", (task_type,))
+        conn.commit()
+        conn.close()
 
 
 # Global database obyekti

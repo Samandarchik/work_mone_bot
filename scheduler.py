@@ -27,6 +27,13 @@ async def send_filial_statistics(bot: Bot):
         text=msg,
     )
 
+    db.reset_daily_tasks()
+
+
+async def reset_monthly_active():
+    db.reset_monthly_tasks()
+
+
 
 def setup_scheduler(bot: Bot):
     """Schedulerni sozlash"""
@@ -34,10 +41,18 @@ def setup_scheduler(bot: Bot):
     # Har kuni soat 00:00 da
     scheduler.add_job(
         send_filial_statistics,
-        trigger=CronTrigger(hour=13, minute=6),
+        trigger=CronTrigger(hour=0, minute=0),
         args=[bot],
         id='daily_statistics',
         name='Kunlik statistika yuborish',
+        replace_existing=True
+    )
+
+    scheduler.add_job(
+        reset_monthly_active,
+        trigger=CronTrigger(day=1, hour=0, minute=0),
+        id='reset_monthly_active',
+        name='Oylik ishlarni qayta aktivlash',
         replace_existing=True
     )
     

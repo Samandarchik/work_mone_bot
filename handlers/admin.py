@@ -9,6 +9,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.filters import StateFilter
 
+from utils import format_filial_statistics
+from datetime import date, timedelta
+
 from database import db
 import config
 from keyboards import (
@@ -158,14 +161,7 @@ async def admin_tasks(call: CallbackQuery, state: FSMContext):
         "Quyidagi amallardan birini tanlang:",
         reply_markup=admin_tasks_menu()
     )
-
-
-from aiogram import F
-from aiogram.types import Message, CallbackQuery
-from database import db
-from utils import format_filial_statistics
-from keyboards import select_filial_keyboard
-from datetime import date, timedelta
+    
 
 @router.message(F.text == "📊 Statistika")
 async def admin_statistics(message: Message):
@@ -187,7 +183,6 @@ async def show_filial_statistics(callback: CallbackQuery):
     """Filial statistikasini ko'rsatish"""
     filial_id = int(callback.data.split("_")[-1])
     today = date.today()
-    print(today)
     
     filial = db.get_filial(filial_id)
     if not filial:
@@ -195,7 +190,7 @@ async def show_filial_statistics(callback: CallbackQuery):
         return
     
     # Kunlik statistika olish
-    stats = db.get_filial_task_statistics(today)
+    stats = db.get_filial_task_statistics_last_month()
     # Filial bo'yicha filtrlangan stats
     filial_stats = [s for s in stats if s[0] == filial_id]
     
@@ -223,6 +218,7 @@ async def show_filial_statistics(callback: CallbackQuery):
 
 @router.message(F.text == "⚙️ Sozlamalar")
 async def admin_settings(message: Message):
+    db.add_filial()
     """Sozlamalar bo'limi"""
     filials = db.get_all_filials()
     roles = db.get_all_roles()

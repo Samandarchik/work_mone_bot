@@ -73,11 +73,7 @@ def format_task_completion_caption(user_data, task_text):
     
     
     
-    caption = f"""<b>📌 VAZIFA BAJARILDI</b>
-
-👤 Ishchi: {full_name}
-📱 Telefon: {format_phone(phone)}
-📝 Vazifa: {task_text}"""
+    caption = f"""📝 Vazifa: {task_text}"""
     
     return caption
 

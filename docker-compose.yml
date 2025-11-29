@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  workly_bot:
+    build: .
+    container_name: workly_bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./workly.db:/app/workly.db
+      - ./bot.log:/app/bot.log
+    command: ["python3", "bot.py"]
